@@ -528,40 +528,7 @@ export class QuickEncounter {
     }
 
 
-    static getSceneControlButtons(buttons) {
-        if (!game.user.isGM) {return;}
-        //Hooked on the left-hand set of buttons; add a Create Quick Encounter one
-        const basicControlsButton = buttons.find(b => b.name === "token");
 
-        if (basicControlsButton) {
-            basicControlsButton.tools.push({
-                name: "linkEncounter",
-                title: game.i18n.localize("QE.CreateQuickEncounter.BUTTON"),
-                icon: "fas fa-swords",
-                toggle: false,
-                button: true,
-                visible: game.user.isGM,
-                onClick: event => QuickEncounter.runAddOrCreate(event)
-            });          
-        }
-
-        const tileControlsButton = buttons.find(b => b.name === "tiles");
-
-        if (tileControlsButton) {
-            tileControlsButton.tools.push({
-                name: "linkEncounter",
-                title: game.i18n.localize("QE.CreateQuickEncounter.BUTTON"),
-                //1.1.3c Issue 105: Replace raised-fist with crossed-swords to be consistent with CT
-                icon: "fas fa-swords",
-                toggle: false,
-                button: true,
-                visible: game.user.isGM,
-                onClick: event => QuickEncounter.runAddOrCreate(event)
-            });
-        }
-
-
-    }
 
     static runAddOrCreate(event, clickedQuickEncounter) {
         //Will only have a clickedQuickEncounter when called from the QE dialog with the [Add tokens/tiles] button
@@ -2147,7 +2114,30 @@ Hooks.on('closeJournalPageSheet', async (journalPageSheet, html) => {
 
 Hooks.on("getJournalSheetHeaderButtons", QuickEncounter.getJournalSheetHeaderButtons);
 Hooks.on("init", QuickEncounter.init);
-Hooks.on('getSceneControlButtons', QuickEncounter.getSceneControlButtons);
+Hooks.on('getSceneControlButtons', controls => {
+    if (game.user.isGM) {
+        controls.tokens.tools.basicControlsButton = {
+                name: "basicControlsButton",
+                title: game.i18n.localize("QE.CreateQuickEncounter.BUTTON"),
+                icon: "fas fa-swords",
+                toggle: false,
+                button: true,
+                visible: game.user.isGM,
+		order: 99,
+                onChange: event => QuickEncounter.runAddOrCreate(event)
+        };
+        controls.tiles.tools.tileControlsButton = {
+                name: "tileControlsButton",
+                title: game.i18n.localize("QE.CreateQuickEncounter.BUTTON"),
+                icon: "fas fa-swords",
+                toggle: false,
+                button: true,
+                visible: game.user.isGM,
+		order: 99,
+                onChange: event => QuickEncounter.runAddOrCreate(event)
+        };
+    }
+});
 Hooks.on("deleteCombat", (combat, options, userId) => {
     QuickEncounter.onDeleteCombat(combat, options, userId);
 });
